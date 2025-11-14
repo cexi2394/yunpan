@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEXI的网盘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background: #0d0d1a;
+            background-image: 
+                radial-gradient(circle, #ffffff 1px, transparent 1px),
+                radial-gradient(circle, #ffffff 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            color: #e6e6e6;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.8;
+        }
+        
+        .container {
+            background: rgba(18, 18, 30, 0.85);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 10px rgba(66, 153, 225, 0.5);
+        }
+        
+        /* 新增：请喝咖啡按钮样式 */
+        .coffee-btn {
+            display: block;
+            margin: 0 auto 20px;
+            padding: 10px 25px;
+            background: #fbbf24;
+            color: #12121e;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .coffee-btn:hover {
+            background: #f59e0b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #b0b0cc;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+        
+        .release-section {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .release-title {
+            color: #4299e1;
+            margin: 25px 0 15px;
+            font-size: 20px;
+            padding-left: 10px;
+            border-left: 4px solid #4299e1;
+        }
+        
+        .file-item {
+            border: 1px solid rgba(66, 153, 225, 0.2);
+            background-color: rgba(25, 25, 40, 0.7);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .file-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(66, 153, 225, 0.15);
+            border-color: #4299e1;
+        }
+        
+        .file-item h3 {
+            margin: 0 0 12px 0;
+            color: #ffffff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .file-item h3::before {
+            content: "📄";
+            margin-right: 10px;
+        }
+        
+        .file-info {
+            color: #b0b0cc;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .file-info span {
+            display: flex;
+            align-items: center;
+        }
+        
+        .file-info span::before {
+            margin-right: 5px;
+        }
+        
+        .file-info span:first-child::before {
+            content: "📊";
+        }
+        
+        .file-info span:last-child::before {
+            content: "⏱️";
+        }
+        
+        a {
+            display: inline-block;
+            margin-right: 12px;
+            padding: 10px 20px;
+            background: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        a:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+        
+        .high-speed {
+            background: #38b2ac;
+        }
+        
+        .high-speed:hover {
+            background: #319795;
+            box-shadow: 0 4px 12px rgba(56, 178, 172, 0.4);
+        }
+        
+        .error {
+            color: #ff6b6b;
+            font-weight: 600;
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(239, 68, 68, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            margin: 20px 0;
+        }
+        
+        #loading {
+            text-align: center;
+            padding: 40px;
+            color: #b0b0cc;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #loading::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 3px solid #4299e1;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 讨论区样式 */
+        .discussions-section {
+            margin-top: 50px;
+        }
+        
+        .discussion-item {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background-color: rgba(25, 25, 40, 0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .discussion-item:hover {
+            border-color: rgba(66, 153, 225, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .discussion-title {
+            color: #63b3ed;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .discussion-meta {
+            color: #b0b0cc;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 站主标签样式 */
+        .owner-badge {
+            background-color: #e53e3e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* 编码选择器样式 */
+        .encoding-selector {
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: rgba(25, 25, 40, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e6e6e6;
+            cursor: pointer;
+        }
+        
+        .encoding-selector option {
+            background: #12121e;
+            color: #e6e6e6;
+        }
+        
+        /* 新增：收款码弹窗样式 */
+        .qrcode-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: rgba(25, 25, 40, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .modal-title {
+            color: #fbbf24;
+            font-size: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .modal-title::before,
+        .modal-title::after {
+            content: "☕";
+        }
+        
+        .modal-qrcode-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        
+        .modal-qrcode-item {
+            text-align: center;
+        }
+        
+        .modal-qrcode-img {
+            width: 180px;
+            height: 180px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .modal-qrcode-desc {
+            color: #d1d5db;
+            font-size: 14px;
+        }
+        
+        .modal-note {
+            color: #b0b0cc;
+            font-size: 13px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .close-modal {
+            padding: 10px 30px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .close-modal:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+        
+        /* 响应式适配手机 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .file-item {
+                padding: 15px;
+            }
+            
+            a {
+                width: 100%;
+                margin: 0 0 10px 0;
+                text-align: center;
+            }
+            
+            .file-info {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .modal-qrcode-container {
+                gap: 20px;
+            }
+            
+            .modal-qrcode-img {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CEXI的网盘</h1>
+        
+        <!-- 新增：请作者喝coffee按钮 -->
+        <button class="coffee-btn" id="coffeeBtn">
+            ☕ 请作者喝coffee
+        </button>
+        
+        <div class="subtitle">作者博客 | cexi2394.github.io</div>
+        
+        <div id="loading">正在加载文件... </div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="file-list"></div>
+        
+        <!-- 讨论区容器 -->
+        <div class="discussions-section">
+            <h3 class="release-title">💬 讨论区</h3>
+            <select id="encoding-select" class="encoding-selector" style="display: none;">
+                <option value="utf-8">UTF-8（默认）</option>
+                <option value="gbk">GBK（中文Windows默认）</option>
+                <option value="gb2312">GB2312（简体中文）</option>
+                <option value="gb18030">GB18030（扩展中文）</option>
+                <option value="iso-8859-1">ANSI（英文）</option>
+            </select>
+            <div id="discussions-loading" style="display: flex; justify-content: center; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; color: #b0b0cc;">
+                    <div style="width: 16px; height: 16px; border: 2px solid #4299e1; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    加载讨论中...
+                </div>
+            </div>
+            <div id="discussions-error" class="error" style="display: none;"></div>
+            <div id="discussions-container"></div>
+        </div>
+    </div>
+
+    <!-- 新增：收款码弹窗 -->
+    <div class="qrcode-modal" id="qrcodeModal">
+        <div class="modal-content">
+            <h3 class="modal-title">感谢支持 · 喝杯咖啡吧～</h3>
+            <div class="modal-qrcode-container">
+                <!-- 微信收款码（替换为你的真实地址） -->
+                <div class="modal-qrcode-item">
+                    <img src="https://raw.githubusercontent.com/CEXI2394/yunpan/main/qrcode/all.yuan.png" alt="微信收款码" class="modal-qrcode-img" id="wechat-qrcode">
+                    <p class="modal-qrcode-desc">微信支付</p>
+                </div>
+                <!-- 10元微信收款码（替换为你的真实地址） -->
+                <div class="modal-qrcode-item">
+                    <img src="https://raw.githubusercontent.com/CEXI2394/yunpan/main/qrcode/10yuan.png" alt="10元微信收款码" class="modal-qrcode-img" id="alipay-qrcode">
+                    <p class="modal-qrcode-desc">10元微信收款码</p>
+                </div>
+            </div>
+            <p class="modal-note">
+                您的支持是我持续更新的动力！<br>
+                打赏时可备注需求，优先处理～
+            </p>
+            <button class="close-modal" id="closeModal">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 配置信息
+        const GITHUB_TOKEN = "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"; // 你的GitHub令牌
+        const GITHUB_USER = "cexi2394"; // 你的GitHub用户名
+        const GITHUB_REPO = "yunpan";       // 你的仓库名
+
+        // API地址
+        const RELEASES_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/releases`;
+        const DISCUSSION_FILE_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/taolun.txt?ref=main`;
+        const ACCELERATE_DOMAIN = "https://gitproxy.click";
+
+        // 全局变量存储原始base64内容（用于切换编码）
+        let rawBase64Content = "";
+
+        // 新增：弹窗控制
+        const coffeeBtn = document.getElementById("coffeeBtn");
+        const qrcodeModal = document.getElementById("qrcodeModal");
+        const closeModal = document.getElementById("closeModal");
+
+        // 点击按钮显示弹窗
+        coffeeBtn.addEventListener("click", () => {
+            qrcodeModal.style.display = "flex";
+        });
+
+        // 点击关闭按钮隐藏弹窗
+        closeModal.addEventListener("click", () => {
+            qrcodeModal.style.display = "none";
+        });
+
+        // 点击弹窗外部空白处隐藏弹窗
+        qrcodeModal.addEventListener("click", (e) => {
+            if (e.target === qrcodeModal) {
+                qrcodeModal.style.display = "none";
+            }
+        });
+
+        // 按ESC键关闭弹窗
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && qrcodeModal.style.display === "flex") {
+                qrcodeModal.style.display = "none";
+            }
+        });
+
+        // 页面加载后执行
+        window.onload = async function() {
+            const loadingEl = document.getElementById("loading");
+            const errorEl = document.getElementById("error");
+            const fileListEl = document.getElementById("file-list");
+
+            try {
+                // 加载Releases
+                const response = await fetch(RELEASES_API, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `token ${GITHUB_TOKEN}`,
+                        "Accept": "application/vnd.github.v3+json",
+                        "User-Agent": "GitHub-Pan-App"
+                    }
+                });
+
+                if (!response.ok) {
+                    switch(response.status) {
+                        case 401:
+                            showError("令牌无效或已过期！请重新生成令牌");
+                            break;
+                        case 403:
+                            showError("API访问次数超限！请1小时后再试");
+                            break;
+                        case 404:
+                            showError("仓库不存在！请检查用户名和仓库名");
+                            break;
+                        default:
+                            showError(`请求失败：${response.status} - ${response.statusText}`);
+                    }
+                    return;
+                }
+
+                const releases = await response.json();
+
+                if (releases.length === 0) {
+                    showError("你的仓库没有Releases！请先上传文件到Releases");
+                    return;
+                }
+
+                // 隐藏加载提示，显示文件
+                loadingEl.style.display = "none";
+                renderAllReleases(releases);
+                
+                // 加载讨论（从taolun.txt读取）
+                await loadDiscussionsFromFile();
+
+                // 绑定编码切换事件
+                document.getElementById("encoding-select").addEventListener("change", function(e) {
+                    if (rawBase64Content) {
+                        const content = decodeWithEncoding(rawBase64Content, e.target.value);
+                        renderDiscussions(content);
+                    }
+                });
+
+            } catch (error) {
+                showError("网络错误！请检查网络连接或代理是否有效");
+                console.error("错误详情：", error);
+            }
+
+            function showError(msg) {
+                loadingEl.style.display = "none";
+                document.getElementById("discussions-loading").style.display = "none";
+                errorEl.style.display = "block";
+                errorEl.innerText = "❌ " + msg;
+            }
+        };
+
+        // 渲染所有Release
+        function renderAllReleases(releases) {
+            const fileListEl = document.getElementById("file-list");
+            
+            releases.forEach(release => {
+                const releaseSection = document.createElement("div");
+                releaseSection.className = "release-section";
+                
+                const releaseTitle = document.createElement("h3");
+                releaseTitle.className = "release-title";
+                releaseTitle.innerText = `📦 ${release.name || '未命名发布'} (发布于: ${formatTime(release.published_at)})`;
+                releaseSection.appendChild(releaseTitle);
+                
+                const files = release.assets;
+                if (files.length > 0) {
+                    files.forEach(file => {
+                        const fileItem = document.createElement("div");
+                        fileItem.className = "file-item";
+                        fileItem.innerHTML = `
+                            <h3>${file.name}</h3>
+                            <div class="file-info">
+                                <span>大小：${formatFileSize(file.size)}</span>
+                                <span>上传时间：${formatTime(file.created_at)}</span>
+                            </div>
+                            <a href="${file.browser_download_url}" target="_blank">直接下载</a>
+                            <a href="${ACCELERATE_DOMAIN}/${file.browser_download_url}" class="high-speed" target="_blank">高速下载</a>
+                        `;
+                        releaseSection.appendChild(fileItem);
+                    });
+                } else {
+                    const noFileMsg = document.createElement("p");
+                    noFileMsg.style.color = "#b0b0cc";
+                    noFileMsg.style.padding = "15px";
+                    noFileMsg.innerText = "此发布中没有文件";
+                    releaseSection.appendChild(noFileMsg);
+                }
+                
+                fileListEl.appendChild(releaseSection);
+            });
+        }
+
+        // 从taolun.txt加载讨论（支持多编码）
+        async function loadDiscussionsFromFile() {
+            const discussionsLoading = document.getElementById("discussions-loading");
+            const discussionsContainer = document.getElementById("discussions-container");
+            const discussionsError = document.getElementById("discussions-error");
+            const encodingSelect = document.getElementById("encoding-select");
+            
+            try {
+                const response = await fetch(DISCUSSION_FILE_API, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `token ${GITHUB_TOKEN}`,
+                        "Accept": "application/vnd.github.v3+json",
+                        "User-Agent": "GitHub-Pan-App"
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        discussionsLoading.style.display = "none";
+                        const noFileMsg = document.createElement("p");
+                        noFileMsg.style.textAlign = "center";
+                        noFileMsg.style.padding = "20px";
+                        noFileMsg.style.color = "#b0b0cc";
+                        noFileMsg.innerText = "讨论文件不存在，请在仓库main分支创建taolun.txt";
+                        discussionsContainer.appendChild(noFileMsg);
+                        return;
+                    }
+                    throw new Error(`请求失败: ${response.status}`);
+                }
+                
+                const fileData = await response.json();
+                rawBase64Content = fileData.content; // 保存原始base64内容
+                discussionsLoading.style.display = "none";
+                
+                // 尝试自动识别编码并解码
+                let decodedContent = autoDetectEncoding(rawBase64Content);
+                
+                // 显示编码选择器
+                encodingSelect.style.display = "block";
+                
+                // 渲染讨论
+                renderDiscussions(decodedContent);
+                
+            } catch (error) {
+                discussionsLoading.style.display = "none";
+                discussionsError.style.display = "block";
+                discussionsError.innerText = "❌ 加载讨论失败，请稍后重试";
+                console.error("讨论加载错误:", error);
+            }
+        }
+
+        // 自动识别编码（UTF-8优先，失败则尝试其他编码）
+        function autoDetectEncoding(base64Content) {
+            // 先尝试UTF-8
+            let content = decodeWithEncoding(base64Content, "utf-8");
+            if (isValidChinese(content)) {
+                document.getElementById("encoding-select").value = "utf-8";
+                return content;
+            }
+            
+            // UTF-8失败，尝试GBK
+            content = decodeWithEncoding(base64Content, "gbk");
+            if (isValidChinese(content)) {
+                document.getElementById("encoding-select").value = "gbk";
+                return content;
+            }
+            
+            // GBK失败，尝试GB2312
+            content = decodeWithEncoding(base64Content, "gb2312");
+            if (isValidChinese(content)) {
+                document.getElementById("encoding-select").value = "gb2312";
+                return content;
+            }
+            
+            // 最后尝试GB18030
+            content = decodeWithEncoding(base64Content, "gb18030");
+            document.getElementById("encoding-select").value = "gb18030";
+            return content;
+        }
+
+        // 根据指定编码解码base64内容
+        function decodeWithEncoding(base64Content, encoding) {
+            // 解码base64为Uint8Array
+            const binaryString = atob(base64Content);
+            const uint8Array = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                uint8Array[i] = binaryString.charCodeAt(i);
+            }
+            
+            // 根据编码解码
+            try {
+                switch(encoding) {
+                    case "utf-8":
+                        return new TextDecoder("utf-8", { fatal: true }).decode(uint8Array);
+                    case "gbk":
+                        return new TextDecoder("gbk", { fatal: true }).decode(uint8Array);
+                    case "gb2312":
+                        return new TextDecoder("gb2312", { fatal: true }).decode(uint8Array);
+                    case "gb18030":
+                        return new TextDecoder("gb18030", { fatal: true }).decode(uint8Array);
+                    case "iso-8859-1":
+                        return new TextDecoder("iso-8859-1").decode(uint8Array);
+                    default:
+                        return new TextDecoder("utf-8").decode(uint8Array);
+                }
+            } catch (e) {
+                // 解码失败时返回原始字符串
+                return binaryString;
+            }
+        }
+
+        // 判断是否为有效中文（排除乱码）
+        function isValidChinese(str) {
+            // 中文正则（包含常见中文、标点）
+            const chineseRegex = /[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/;
+            // 乱码特征：连续的ASCII控制字符或无意义字符
+            const garbleRegex = /[\x00-\x1f\x7f-\xff]{5,}/;
+            
+            return chineseRegex.test(str) && !garbleRegex.test(str);
+        }
+
+        // 渲染讨论内容
+        function renderDiscussions(content) {
+            const discussionsContainer = document.getElementById("discussions-container");
+            discussionsContainer.innerHTML = ""; // 清空现有内容
+            
+            // 解析讨论内容
+            const discussionItems = parseDiscussionText(content);
+            
+            if (discussionItems.length === 0) {
+                const noContentMsg = document.createElement("p");
+                noContentMsg.style.textAlign = "center";
+                noContentMsg.style.padding = "20px";
+                noContentMsg.style.color = "#b0b0cc";
+                noContentMsg.innerText = "讨论区暂无内容";
+                discussionsContainer.appendChild(noContentMsg);
+                return;
+            }
+            
+            // 渲染每个讨论
+            discussionItems.forEach((item, index) => {
+                // 检查是否是站主（CEXI2394）发布的内容
+                const isOwner = item.author && item.author.toLowerCase() === "cexi2394";
+                
+                const discussionItem = document.createElement("div");
+                discussionItem.className = "discussion-item";
+                
+                // 构建作者信息（包含站主标签）
+                const authorHtml = isOwner 
+                    ? `${item.author || '匿名'} <span class="owner-badge">站主</span>`
+                    : item.author || '匿名';
+                
+                discussionItem.innerHTML = `
+                    <h4 class="discussion-title">讨论 #${index + 1}: ${item.title || '无标题'}</h4>
+                    <div class="discussion-meta">
+                        作者：${authorHtml} · 发布于 ${item.date || '未知时间'}
+                    </div>
+                    <div style="color:#d1d5db; font-size:14px; line-height:1.6; white-space: pre-line;">
+                        ${item.content.trim()}
+                    </div>
+                `;
+                discussionsContainer.appendChild(discussionItem);
+            });
+        }
+
+        // 解析taolun.txt内容（支持灵活格式）
+        function parseDiscussionText(content) {
+            const lines = content.split('\n').map(line => line.trim());
+            const discussions = [];
+            let currentDiscussion = { 
+                title: '无标题', 
+                date: '未知时间', 
+                author: '', 
+                content: '' 
+            };
+            
+            lines.forEach(line => {
+                if (line === '') {
+                    // 空行分隔不同讨论（内容不为空才添加）
+                    if (currentDiscussion.content.trim()) {
+                        discussions.push(currentDiscussion);
+                        currentDiscussion = { 
+                            title: '无标题', 
+                            date: '未知时间', 
+                            author: '', 
+                            content: '' 
+                        };
+                    }
+                } else if (line.includes(':')) {
+                    // 支持灵活的键名（不区分大小写、空格）
+                    const [key, value] = line.split(':', 2).map(p => p.trim());
+                    const keyLower = key.toLowerCase().replace(/\s+/g, '');
+                    
+                    if (keyLower.includes('标题')) {
+                        currentDiscussion.title = value || currentDiscussion.title;
+                    } else if (keyLower.includes('日期') || keyLower.includes('时间')) {
+                        currentDiscussion.date = value || currentDiscussion.date;
+                    } else if (keyLower.includes('作者') || keyLower.includes('发布者')) {
+                        currentDiscussion.author = value || currentDiscussion.author;
+                    } else if (keyLower.includes('用户名')) {
+                        currentDiscussion.author = value || currentDiscussion.author;
+                    } else {
+                        // 其他带冒号的行视为内容
+                        currentDiscussion.content += line + '\n';
+                    }
+                } else {
+                    // 普通内容行
+                    currentDiscussion.content += line + '\n';
+                }
+            });
+            
+            // 添加最后一个讨论（如果有内容）
+            if (currentDiscussion.content.trim()) {
+                discussions.push(currentDiscussion);
+            }
+            
+            return discussions;
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes >= 1024 * 1024) {
+                return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+            } else if (bytes >= 1024) {
+                return (bytes / 1024).toFixed(2) + " KB";
+            } else {
+                return bytes + " B";
+            }
+        }
+
+        // 格式化时间
+        function formatTime(isoTime) {
+            const date = new Date(isoTime);
+            return date.toLocaleString();
+        }
+    </script>
+</body>
+</html>
